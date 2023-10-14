@@ -50,6 +50,7 @@ app.get("/success", (req, res) => {
     message: "You're logged in!",
   });
 });
+
 app.use("/auth", authRoutes);
 app.use(
   "/admin",

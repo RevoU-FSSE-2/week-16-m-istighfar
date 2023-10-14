@@ -185,6 +185,10 @@ const refreshTokenHandler = async (req, res) => {
     return res.status(403).json({ error: "Refresh token not provided" });
   }
 
+  if (cache.get(`blacklist_refreshToken_${refreshToken}`)) {
+    return res.status(403).json({ error: "Refresh token is blacklisted" });
+  }
+
   let decodedToken;
   try {
     decodedToken = jwt.verify(refreshToken, JWT_REFRESH_SIGN);
@@ -217,6 +221,7 @@ const refreshTokenHandler = async (req, res) => {
 
 const logoutWithSession = (req, res) => {
   let accessToken = req.cookies["accessToken"];
+  let refreshToken = req.cookies["refreshToken"];
 
   if (!accessToken && req.headers.authorization) {
     accessToken = req.headers.authorization.split(" ")[1];
@@ -224,7 +229,12 @@ const logoutWithSession = (req, res) => {
 
   if (accessToken) {
     const expiresIn = jwt.decode(accessToken).exp * 1000 - Date.now();
-    cache.put(accessToken, true, expiresIn);
+    cache.put(`blacklist_accessToken_${accessToken}`, true, expiresIn);
+  }
+
+  if (refreshToken) {
+    const expiresIn = jwt.decode(refreshToken).exp * 1000 - Date.now();
+    cache.put(`blacklist_refreshToken_${refreshToken}`, true, expiresIn);
   }
 
   res.clearCookie("accessToken");

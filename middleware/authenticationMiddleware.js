@@ -3,7 +3,7 @@ const { JWT_SIGN } = require("../config/jwt.js");
 const cache = require("memory-cache");
 
 const checkRevokedToken = (token) => {
-  return cache.get(token) === true;
+  return cache.get(`blacklist_accessToken_${token}`) === true;
 };
 
 const authenticationMiddleware = (req, res, next) => {
