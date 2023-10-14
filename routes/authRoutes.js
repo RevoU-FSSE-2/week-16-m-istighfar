@@ -6,10 +6,9 @@ const cache = require("memory-cache");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const { JWT_SIGN } = require("../config/jwt");
-
 const { rateLimit } = require("express-rate-limit");
 
-const UserRateLimitStore = require("../routes/UserRateLimitStore");
+const UserRateLimitStore = require("../utils/UserRateLimitStore");
 
 const windowMs = 15 * 60 * 1000;
 

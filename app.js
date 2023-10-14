@@ -8,6 +8,7 @@ const swaggerUi = require("swagger-ui-express");
 const yaml = require("yaml");
 const fs = require("fs");
 const passport = require("passport");
+require("./config/passportConfig");
 const session = require("express-session");
 
 const databaseMiddleware = require("./middleware/databaseMiddleware");

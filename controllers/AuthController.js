@@ -2,11 +2,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const cache = require("memory-cache");
-const nodemailer = require("nodemailer");
+
 const crypto = require("crypto");
 require("dotenv").config();
-const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const { sendVerificationEmail } = require("../services/mailService");
 
 const {
   JWT_SIGN,
@@ -14,64 +13,6 @@ const {
   ACCESS_TOKEN_EXPIRATION,
   REFRESH_TOKEN_EXPIRATION,
 } = require("../config/jwt");
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      const existingUser = await User.findOne({ googleId: profile.id });
-
-      if (existingUser) {
-        return done(null, existingUser);
-      }
-
-      const newUser = new User({
-        googleId: profile.id,
-        username: profile.displayName,
-        email: profile.emails[0].value,
-        role: "student",
-        verified: true,
-      });
-      await newUser.save();
-
-      done(null, newUser);
-    }
-  )
-);
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
-});
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "daiqijb105@gmail.com",
-    pass: "elrvbtfvypzvosdr",
-  },
-});
-
-const sendVerificationEmail = async (email, token) => {
-  const verificationLink = `http://localhost:3000/auth/verify-email/${token}`;
-
-  const mailOptions = {
-    from: "daiqijb105@gmail.com",
-    to: email,
-    subject: "Email Verification",
-    text: `Click on the link to verify your email: ${verificationLink}`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
 
 const register = async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -94,7 +35,7 @@ const register = async (req, res) => {
 
     await newUser.save();
 
-    await sendVerificationEmail(newUser.email, verificationToken);
+    await sendVerificationEmail(email, verificationToken);
 
     res.status(200).json({
       message: "User successfully registered",
@@ -262,6 +203,11 @@ const refreshTokenHandler = async (req, res) => {
     JWT_SIGN,
     { expiresIn: ACCESS_TOKEN_EXPIRATION }
   );
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000,
+  });
 
   res.status(200).json({
     accessToken: accessToken,
