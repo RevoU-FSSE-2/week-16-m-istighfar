@@ -19,7 +19,7 @@ const sendMail = async (options) => {
 };
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationLink = `http://localhost:3000/auth/verify-email/${token}`;
+  const verificationLink = `http://localhost:5173/verify/${token}`;
 
   const mailOptions = {
     from: "daiqijb105@gmail.com",

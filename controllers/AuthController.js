@@ -106,6 +106,7 @@ const login = async (req, res) => {
         refreshToken,
         accessTokenExp: ACCESS_TOKEN_EXPIRATION,
         refreshTokenExp: REFRESH_TOKEN_EXPIRATION,
+        role: existingUser.role,
       });
     } else {
       res.status(400).json({ error: "Password is incorrect" });
@@ -169,6 +170,7 @@ const loginWihSession = async (req, res) => {
         refreshToken,
         accessTokenExp: ACCESS_TOKEN_EXPIRATION,
         refreshTokenExp: REFRESH_TOKEN_EXPIRATION,
+        role: existingUser.role,
       });
     } else {
       res.status(400).json({ error: "Password is incorrect" });
